@@ -17,6 +17,10 @@ Das Vue.js-Buch zu diesem Code: <a href="https://it-visions.de/vuebuch">Vue.js 3
 - <a href="https://github.com/HSchwichtenberg/MiracleListVue/tree/Sprint5">Sprint 5</a>: Design und User Experience 
 - <a href="https://github.com/HSchwichtenberg/MiracleListVue/tree/Sprint6">Sprint 6</a>: Automatisierte Tests (Unit Tests und Ende-zu-Ende-Tests)
 - <a href="https://github.com/HSchwichtenberg/MiracleListVue/tree/Main">Main</a>: Aktueller Entwicklungsstand, der über Sprint 6 hinausgeht
+- <a href="https://github.com/HSchwichtenberg/MiracleListVue/tree/Vite">Vite</a>: Migration von Vue CLI mit Jest und Nightwatch nach Vite mit Vitest und Nightwatch
+
+# Wichtig: Notwendige Client-ID für die Nutzung des Backends
+MiracleList basiert auf einem in der öffentlich Cloud zugänglichen <a href="https://miraclelistbackend.azurewebsites.net">Backend</a>. Sie benötigen eine Client-ID, die Sie unter https://miraclelistbackend.azurewebsites.net/clientid beantragen müssen. Die Client-ID muss dann in VUE_APP_ENV_ClientID=TODO in der Datei .env im Code erfasst werden. Ohne die Client-ID ist eine erfolgreiche Anmeldung am Backend nicht möglich.
 
 # Wichtig: Notwendige Client-ID für die Nutzung des Backends
 MiracleList basiert auf einem in der öffentlich Cloud zugänglichen <a href="https://miraclelistbackend.azurewebsites.net">Backend</a>. Sie benötigen eine Client-ID, die Sie unter https://miraclelistbackend.azurewebsites.net/clientid beantragen müssen. Die Client-ID muss dann in VUE_APP_ENV_ClientID=TODO in der Datei .env im Code erfasst werden. Ohne die Client-ID ist eine erfolgreiche Anmeldung am Backend nicht möglich.
@@ -58,32 +62,43 @@ UpperCamelCasing (Pascal Casing)
 
 # Kommandozeilenbefehle der Vue CLI
 
-## Project setup
+## Pakete installieren
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### Entwicklungswebserver mit Hot Reload
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### Produktionsbuild
 ```
 npm run build
 ```
 
-### Run your unit tests
+### Unit Tests mit Jest
 ```
 npm run test:unit
 ```
 
-### Run your end-to-end tests
+### End-to-End Tests (Browser-UI-Tests) mit Nightwatch
+Achten Sie darauf, dass der ChromeDriver in package.json der installierten Version von Chrome entspricht!
 ```
 npm run test:e2e
 ```
 
-### Lints and fixes files
+### End-to-End Tests ohne Browserfenster
+```
+npm run test:e2e -- --headless  
+```
+
+### Einzelner End-to-End Test in bestimmtem Browser
+```
+npm run test:e2e -- ./tests/e2e/specs/ML_LoginAndHome_Tests.js  --testcase "login, create category with tasks and remove" --env chrome
+```
+
+### Linting
 ```
 npm run lint
 ```
@@ -93,5 +108,5 @@ npm run lint
 vue ui
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### Konfigiuration anpassen
+Configuration Reference](https://cli.vuejs.org/config/).

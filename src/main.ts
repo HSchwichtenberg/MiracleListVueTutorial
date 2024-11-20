@@ -22,7 +22,7 @@ import { releaseDate } from '../package.json'
 
 // Ausgabe der Versionsnummer an Konsole und im Browsertitel
 console.log(`main.ts: Starting Vue.js ${vueVersion} App ${version}, released ${releaseDate}`);
-document.title = "MiracleListVue " + import.meta.env.VERSION;
+document.title = `MiracleListVue ${version}`;
 console.log("Backend",import.meta.env.VITE_ENV_Backend,import.meta.env.VITE_ENV_ClientID )
 
 // Vue App erzeugen

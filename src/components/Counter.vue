@@ -11,16 +11,21 @@ div { color: blue}
 <script setup lang="ts">
 import { ref,  onMounted } from 'vue';
 
-const props = defineProps({
-  startValue: Number
-  // oder
-  // startValue: {
-  //   default: 0,
-  //   type: Number
-  // } 
-})
+const { startValue = 42 } = defineProps<{
+  startValue?: number
+}>()
 
-var counter = ref(props.startValue || 0);
+// vor Vue.js 3.5:
+// const props = defineProps({
+//   startValue: Number
+//   // oder
+//   // startValue: {
+//   //   default: 0,
+//   //   type: Number
+//   // } 
+// })
+
+var counter = ref(startValue || 0);
 // oder
 // var counter = ref(0);
 // counter.value = props.startValue || 0;

@@ -27,6 +27,14 @@ const routes: Array<RouteRecordRaw> = [
   component: () => import(
                    '@/views/About.vue')
  }
+ ,
+ {
+  path: '/counter',
+  name: 'Counter',
+  //component: About
+  component: () => import(
+                   '@/components/Counter.vue')
+ }
 ]
 
 console.log("ROUTER INIT"); // Router wird vor main.ts ausgeführt!

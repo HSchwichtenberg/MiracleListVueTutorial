@@ -10,9 +10,11 @@
 
 <template>
  <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
+ 
  <div id="col1">
   <!-- ##################################### Spalte 1: Kategorien-->
-  <div v-if="data.categorySet" class="MLpanel" :class="data.task ? 'hidden-xs hidden-sm col-md-3 col-lg-2' : 'col-xs-4 col-sm-4 col-md-3 col-lg-2'">
+  <div v-if="data.categorySet" class="MLpanel" 
+       :class="data.task ? 'hidden-xs hidden-sm col-md-3 col-lg-2' : 'col-xs-4 col-sm-4 col-md-3 col-lg-2'">
    <!-- ---------- Überschrift Spalte 1-->
    <h4>
     <span style="margin-right: 5px" id="categoryCount">{{ data.categorySet.length }}</span>
@@ -39,7 +41,8 @@
      :title="'Task Category #' + c.categoryID"
      :class="{ MLselected: data.category && c.categoryID == data.category?.categoryID }">
      {{ c.name }}
-     <span id="remove" style="float: right" class="close" :title="`Remove Category #${c.categoryID}`" @click.stop="RemoveCategory(c)">&times;</span>
+     <span id="remove" style="float: right" class="close" :title="`Remove Category #${c.categoryID}`" 
+           @click.stop="RemoveCategory(c)">&times;</span>
     </li>
    </ol>
   </div>
@@ -52,7 +55,7 @@
   class="MLpanel"
   :class="data.task ? 'hidden-xs col-sm-6 col-md-5 col-lg-6' : 'col-xs-8 col-sm-8 col-md-9 col-lg-10'">
   <!-- ---------- Überschrift Spalte 1-->
-  <h4>
+  <h4 id="TaskHeadline">
    <span id="taskCount" style="margin-right: 5px"> {{ data.taskSet.length }}</span>
    <span>Tasks in</span> <span id="categoryCurrentName" style="font-weight: 600"> {{ data.category.name }}</span>
   </h4>
@@ -122,8 +125,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, inject, computed, onUnmounted, watchEffect } from "vue";
 import { MiracleListProxy, Category, Task, Importance } from "@/services/MiracleListProxyV2";
-// import { AuthenticationManager } from '@/services/AuthenticationManager' // Sprint 4
-// Libraries 
+// Zusatzbibliotheken
 import moment from "moment";
 import draggable from "vuedraggable";
 import * as signalR from "@microsoft/signalr"; // Sprint 5
@@ -132,7 +134,7 @@ import { useToast } from "vue-toastification"; // Sprint 5
 // Unterkomponenten
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import TaskEdit from "@/components/TaskEdit.vue";
-// Sonstige Klassen
+// Sonstige Klassen: Anwendungszustand
 import { AppState } from "@/services/AppState"; // Sprint 4
 
 const toast = useToast();
@@ -160,12 +162,14 @@ let IsFuture = (d: Date) => moment(d).startOf("day") > moment().startOf("day");
 const confirmDialog = ref<typeof ConfirmDialog>();
 
 // Sprint 5: SignalR
+let HubURL = import.meta.env.VITE_ENV_Backend + "/MLHub";
 let HubConnection = ref<signalR.HubConnection>();
 let HubConnected = computed(() => HubConnection.value?.state == HubConnectionState.Connected);
+
 // Überwachung der Zustandsänderungen der HubConnection
 watchEffect(async () => {
  AppState.HubConnectionInfo.value =
-  "SignalR: <span style='color:" + (HubConnected.value ? "green" : "red") + "'>" + HubConnection.value?.state + "<span>";
+  "SignalR: <span style='color:" + (HubConnected.value ? "green" : "red") + "'  title='" + HubURL + " Connection-ID: " + HubConnection.value?.connectionId + "'>" + HubConnection.value?.state + "<span>";
 });
 
 onMounted(async () => {
@@ -179,19 +183,19 @@ onMounted(async () => {
  // if (AppState.Token) // Sprint 2+3
  await ShowCategorySet();
 
- //#region ------ SignalR (Spring 6)
- console.log("*** SignalR Init HubConnection...");
+ //#region ------ SignalR (Sprint 6)
+ console.log(`SignalR.Connecting to ${HubURL}`);
  // ASP.NET Core SignalR-Verbindung konfigurieren
- HubConnection.value = new signalR.HubConnectionBuilder().withUrl(process.env.VUE_APP_ENV_Backend + "/MLHub").build();
+ HubConnection.value = new signalR.HubConnectionBuilder().withAutomaticReconnect().withUrl(HubURL).build();
  // -> eingehende Nachricht
  HubConnection.value!.on("CategoryListUpdate", async (sender: string, categoryID: number) => {
-  console.log(`*** SignalR-CategoryListUpdate von ${sender}: ${categoryID}`);
-  toast.info(`Category List has been changed in another instance.`);
+  console.log(`SignalR.CategoryListUpdate from ${sender}: ${categoryID}`);
+  toast.log(`Category List has been changed in another instance.`);
   await ShowCategorySet();
  });
  // -> eingehende Nachricht
  HubConnection.value!.on("TaskListUpdate", async (sender: string, categoryID: number) => {
-  console.log(`*** SignalR-TaskListUpdate von ${sender}: ${categoryID}`);
+  console.log(`SignalR.TaskListUpdate from ${sender}: ${categoryID}`);
   var changedCategory: Category | undefined = data.categorySet?.find((x) => x.categoryID == categoryID);
   if (changedCategory) toast.success(`Tasks in Category ${categoryID}: ${changedCategory.name} have been changed in another instance.`);
   if (categoryID == data.category!.categoryID) {
@@ -202,7 +206,7 @@ onMounted(async () => {
  // Verbindung zum SignalR-Hub starten
  HubConnection.value!.start()
   .then(() => {
-   console.log(`*** SignalR-Connection OK (${HubConnection.value!.state}): ${HubConnection.value!.connectionId} ${AppState.Token}`);
+   console.log(`SignalR.Connection started: (${HubConnection.value!.state}): ${HubConnection.value!.connectionId} ${AppState.Token}!`);
    // Beim Hub registrieren für Ereignisse auf dem Server
    HubConnection.value!.send("Register", AppState.Token);
   })
@@ -227,12 +231,15 @@ async function ShowCategorySet() {
 
 async function ShowTaskSet(c: Category | null | undefined) {
  console.log("ShowTaskSet", c);
+ // aktuelle Kategorie festlegen
  data.category = c;
  if (c && c.categoryID) {
+  // Lade Aufgaben in dieser Kategorie
   data.taskSet = await proxy.taskSet(c.categoryID, AppState.Token);
   // Sortierreihenfolge beachten!
   data.taskSet = data.taskSet.sort((x, y) => (x.order as number) - (y.order as number));
   console.log("ShowTaskSet", data.taskSet);
+  // Es gibt keine gewählte Aufgabe in dieser Kategorie
   data.task = null;
  }
 }
@@ -257,15 +264,15 @@ async function RemoveCategory(c: Category) {
  }
 }
 
-async function RemoveCategor_Alt(c: Category) {
- // Sprint 2 bis 4
- if (c == null || !c.categoryID) return;
- var text = `Do you want to remove category #${c.categoryID} ${c.name} and all related tasks?`;
- if (!confirm(text)) return;
- await proxy.deleteCategory(c.categoryID as number, AppState.Token);
- await ShowCategorySet();
-data.category = data.categorySet!.length > 0 ? (data.categorySet![0] as Category) : null;
-}
+// async function RemoveCategor_Alt(c: Category) {
+//  // Sprint 2 bis 4
+//  if (c == null || !c.categoryID) return;
+//  var text = `Do you want to remove category #${c.categoryID} ${c.name} and all related tasks?`;
+//  if (!confirm(text)) return;
+//  await proxy.deleteCategory(c.categoryID as number, AppState.Token);
+//  await ShowCategorySet();
+// data.category = data.categorySet!.length > 0 ? (data.categorySet![0] as Category) : null;
+// }
 
 async function RemoveTask(t: Task) {
  // ab Sprint 5
@@ -282,15 +289,15 @@ async function RemoveTask(t: Task) {
  }
 }
 
-async function RemoveTask_alt(t: Task) {
- // Sprint 2 bis 4
- if (t == null || !t.taskID) return;
- var text = `Do you want to remove Task #${t.taskID} <b>${t.title}</b>?`;
- if (!confirm(text)) return;
- await proxy.deleteTask(t.taskID, AppState.Token);
- await ShowTaskSet(data.category);
- data.task = null;
-}
+// async function RemoveTask_alt(t: Task) {
+//  // Sprint 2 bis 4
+//  if (t == null || !t.taskID) return;
+//  var text = `Do you want to remove Task #${t.taskID} <b>${t.title}</b>?`;
+//  if (!confirm(text)) return;
+//  await proxy.deleteTask(t.taskID, AppState.Token);
+//  await ShowTaskSet(data.category);
+//  data.task = null;
+// }
 
 async function CreateCategory() {
  if (!data.newCategoryName) return;
@@ -361,6 +368,7 @@ async function ChangeTaskOrder(evt, originalEvent) {
  //   });
 }
 
+//#region SignalR-Nachrichten senden (Sprint 5)
 async function SendCategoryListUpdate() {
  console.log("SignalR.SendCategoryListUpdate", HubConnection.value!.state);
  if (HubConnected.value) await HubConnection.value!.send("CategoryListUpdate", AppState.Token);
@@ -372,14 +380,15 @@ async function SendTaskListUpdate() {
  if (HubConnected.value) await HubConnection.value!.send("TaskListUpdate", AppState.Token, data.category!.categoryID);
  else console.warn("SignalR.connection: not connected!", "");
 }
+//#endregion
 
-// Sprint 5
-function DragTask(ev, task: Task) {
+// Sprint 5: Drag&Drop
+function DragTask(ev: DragEvent, task: Task) {
  ev.dataTransfer.setData("task", JSON.stringify(task));
 }
 
-// Sprint 5
-async function DropTaskToCategory(ev, category: Category) {
+// Sprint 5: Drag&Drop
+async function DropTaskToCategory(ev: DragEvent, category: Category) {
  const task = JSON.parse(ev.dataTransfer.getData("task")) as Task; // Hole fallengelassenes Task-Objekt
  console.log("Drop", task.taskID, task.categoryID, category.categoryID);
  task.categoryID = category.categoryID; // Ändere Kategorie

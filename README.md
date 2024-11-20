@@ -3,10 +3,9 @@ Autor: Dr. Holger Schwichtenberg, <a href="http://www.IT-Visions.de">www.IT-Visi
 
 Diese Webanwendung läuft zu Test- und Schulungszwecken live in der Cloud: <a href="http://miraclelist-vue.azurewebsites.net">http://miraclelist-vue.azurewebsites.net</a>
 
-Eingesetzte Techniken im Client: Vue.js 3, Vue CLI, TypeScript, Bootstrap, Moment.js, Vuelidate, SignalR, vue.draggable, Vue-Toastification, Jest, Vue Test Utils, Nightwatch
+Eingesetzte Techniken im Client: Vue.js 3, ~~Vue CLI~~ **Vite**, TypeScript, Bootstrap, Moment.js, Vuelidate, SignalR, vue.draggable, Vue-Toastification, ~~Jest~~ **Vitest**, Vue Test Utils, Nightwatch
 
 # Fachbuch
-
 Das Vue.js-Buch zu diesem Code: <a href="https://it-visions.de/vuebuch">Vue.js 3 Crashkurs</a>
 
 # Branches
@@ -46,7 +45,6 @@ MiracleList basiert auf einem in der öffentlich Cloud zugänglichen <a href="ht
 </ul>
 
 # Namensrichtlinien in diesem Vue.js-Projekt
-
 lowerCamelCasing
 - Lokale Variablen 
 - Private Variablen auf Komponentenebene
@@ -57,7 +55,7 @@ UpperCamelCasing (Pascal Casing)
 - Methoden/Funktionen auf Komponentenebene
 - Öffenliche Properties
 
-# Kommandozeilenbefehle der Vue CLI
+# Wichtige Kommandozeilenbefehle für Vite
 
 ## Pakete installieren
 ```
@@ -66,7 +64,7 @@ npm install
 
 ### Entwicklungswebserver mit Hot Reload
 ```
-npm run serve
+npm run dev
 ```
 
 ### Produktionsbuild
@@ -74,7 +72,7 @@ npm run serve
 npm run build
 ```
 
-### Unit Tests mit Jest
+### Unit Tests mit Vitest
 ```
 npm run test:unit
 ```
@@ -85,25 +83,3 @@ Achten Sie darauf, dass der ChromeDriver in package.json der installierten Versi
 npm run test:e2e
 ```
 
-### End-to-End Tests ohne Browserfenster
-```
-npm run test:e2e -- --headless  
-```
-
-### Einzelner End-to-End Test in bestimmtem Browser
-```
-npm run test:e2e -- ./tests/e2e/specs/ML_LoginAndHome_Tests.js  --testcase "login, create category with tasks and remove" --env chrome
-```
-
-### Linting
-```
-npm run lint
-```
-
-### Vue CLI Web GUI
-```
-vue ui
-```
-
-### Konfigiuration anpassen
-Configuration Reference](https://cli.vuejs.org/config/).

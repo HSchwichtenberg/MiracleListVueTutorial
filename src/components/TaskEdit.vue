@@ -50,7 +50,7 @@
      </div>
      <!--Fälligkeit-->
      <div class="col-xs-6" style="padding-left: 2px">
-      <div class="form-group" :class="{ 'has-error': v$.due.$error }">
+      <div class="form-group" :class="{'has-error': v$.due.$error}">
        <label for="taskDue" class="control-label" :title="t.due?.toString()">Due</label> <span style="color: red" v-if="v$.due.$error">*</span>
        <input id="taskdue" name="taskdue" type="date" v-model="taskDue" class="form-control" />
       </div>
@@ -85,7 +85,9 @@ const props = defineProps({
  task: Task
 });
 // ===  Events
-const emit = defineEmits(['TaskEditDone']);
+const emit = defineEmits<{
+    TaskEditDone: [changed: Boolean]
+}>();
 //#endregion
 
 // Wrapper für Parameter t, weil Zwei-Wege-Bindung direkt an Parameter nicht möglich
@@ -133,10 +135,12 @@ const v$ = useVuelidate(rules, props.task as any, { $autoDirty: true });
 async function Save() {
  var ok = await v$.value.$validate();
  if (ok) {
-  console.log('Save');
-  emit('TaskEditDone', true);
- } else {
-  // console.warn("Validation failed!", v$.value.$errors);
+  console.log("Save");
+  emit("TaskEditDone", true);
+ }
+ else
+ {
+  console.warn("Validation failed!", v$.value.$errors);
  }
 }
 

@@ -7,16 +7,18 @@ module.exports = {
  diagnose: (browser) => {
   browser.init();
 
+  console.log("+++ Nightwatch Diagnose Test +++");
+
+  console.log("Launch URL", browser.launchUrl);
   browser.url(function (result) {
    // print the current url
-   console.log(result);
+   console.log("Launch URL", result);
   });
 
-  // classic Nightwatch Assertion
+  // Classic Nightwatch Assertion
   browser.assert.urlContains("/");
   // Assertion with Chai
   browser.expect.element('body').to.be.present;
-
   browser.end();
  },
 };

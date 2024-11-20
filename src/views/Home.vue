@@ -190,7 +190,7 @@ onMounted(async () => {
  // -> eingehende Nachricht
  HubConnection.value!.on("CategoryListUpdate", async (sender: string, categoryID: number) => {
   console.log(`SignalR.CategoryListUpdate from ${sender}: ${categoryID}`);
-  toast.log(`Category List has been changed in another instance.`);
+  toast.warning(`Category List has been changed in another instance.`);
   await ShowCategorySet();
  });
  // -> eingehende Nachricht
